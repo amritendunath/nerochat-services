@@ -32,6 +32,14 @@ def create_app():
         Middleware(SessionMiddleware, secret_key=os.environ.get("JWT_SECRET", os.urandom(24).hex())),
     ]
     app = FastAPI(middleware=middleware)
+    
+    # Global middleware to handle X-Forwarded-Proto (HTTPS behind proxy)
+    @app.middleware("http")
+    async def proxy_swapper(request: Request, call_next):
+        if request.headers.get("x-forwarded-proto") == "https":
+            request.scope["scheme"] = "https"
+        return await call_next(request)
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],

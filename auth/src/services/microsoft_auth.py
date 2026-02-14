@@ -60,7 +60,14 @@ class MicrosoftOAuth:
         Returns:
             redirect: Redirects the client to the Microsoft authorization URL.
         """
-        redirect_uri = request.url_for('auth_microsoft_callback')
+        # Force HTTPS in production or use the explicit redirect URI from environment
+        redirect_uri = os.environ.get("MICROSOFT_REDIRECT_URI")
+        if not redirect_uri:
+            redirect_uri = request.url_for('auth_microsoft_callback')
+            if os.environ.get("ENVIRONMENT") == "production" or request.headers.get("x-forwarded-proto") == "https":
+                redirect_uri = str(redirect_uri).replace("http://", "https://")
+        
+        self.logger.info(f"Using Microsoft Redirect URI: {redirect_uri}")
         return await self.microsoft.authorize_redirect(request, redirect_uri)
 
     async def microsoft_authorize(self, request: Request):

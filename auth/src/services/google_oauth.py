@@ -48,7 +48,14 @@ class GoogleOAuth:
         Returns:
             redirect: Redirects the client to the Google authorization URL.
         """
-        redirect_uri = request.url_for('google_authorize')
+        # Force HTTPS in production or use the explicit redirect URI from environment
+        redirect_uri = os.environ.get("GOOGLE_REDIRECT_URI")
+        if not redirect_uri:
+            redirect_uri = request.url_for('google_authorize')
+            if os.environ.get("ENVIRONMENT") == "production" or request.headers.get("x-forwarded-proto") == "https":
+                redirect_uri = str(redirect_uri).replace("http://", "https://")
+        
+        self.logger.info(f"Using Google Redirect URI: {redirect_uri}")
         return await self.google.authorize_redirect(request, redirect_uri)
 
     async def google_authorize(self, request: Request):
