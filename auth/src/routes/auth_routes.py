@@ -19,7 +19,7 @@ oauth = OAuth(app)
 logging.basicConfig(level=logging.INFO)
 
 # Create an APIRouter for auth routes
-auth_router = APIRouter(prefix="", tags=["auth"])
+auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
 class EmailVerificationRequest(BaseModel):
     email: str
@@ -49,7 +49,7 @@ async def microsoft_login(request: Request, microsoft_oauth: MicrosoftOAuth =  D
         raise HTTPException(status_code=500, detail="An error occurred")
 
 
-@auth_router.get("/auth/microsoft/callback", name="auth_microsoft_callback")
+@auth_router.get("/microsoft/callback", name="auth_microsoft_callback")
 async def microsoft_authorize(request: Request, microsoft_oauth: MicrosoftOAuth =  Depends(get_microsoft_oauth)):
     try:
         return await microsoft_oauth.microsoft_authorize(request)
