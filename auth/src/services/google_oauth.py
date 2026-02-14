@@ -89,18 +89,11 @@ class GoogleOAuth:
                     "user_ehr_id": str(user_ehr_id),
                 }
                 self.db.insert_user(new_user)
-                jwt_secret = os.environ.get("JWT_SECRET")
-                access_token = jwt.encode(
-                claims={
-                    "sub": user_info["email"],
-                    "name": user_info.get("name"),
-                    "picture": user_info.get("picture"),
-                    "auth_provider": "google",
-                    "user_ehr_id": user_ehr_id,
-                },
-                key=jwt_secret,
-                algorithm="HS256",
-            )
+            else:
+                # If user exists, get the ID from the database object
+                user_ehr_id = user.get("user_ehr_id")
+            
+            self.logger.info(f"User EHR ID: {user_ehr_id}")
             # Create JWT token (Standardized for all users)
             jwt_secret = os.environ.get("JWT_SECRET")
             if not jwt_secret:
