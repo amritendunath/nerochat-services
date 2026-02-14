@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional, List
 # from tools.vectorstore import get_retriever
 from langchain_chroma.vectorstores import chromadb
 import os
-import json
+
 
 chroma_host=os.environ.get("CHROMADB_HOST")
 chroma_port=os.environ.get("CHROMADB_PORT")

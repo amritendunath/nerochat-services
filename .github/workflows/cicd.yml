@@ -129,7 +129,7 @@ jobs:
             AWS_SES=ses
             
             REDIS_HOST=${{ secrets.REDIS_HOST }}
-            REDIS_PORT=${{ secrets.REDIS_PORT || '6379' }}
+            REDIS_PORT=${{ secrets.REDIS_PORT }}
             REDIS_DB=${{ secrets.REDIS_DB }}
             REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
             
@@ -227,8 +227,8 @@ jobs:
             SES_SENDER_EMAIL=${{ secrets.SES_SENDER_EMAIL }}
             AWS_SES=${{ secrets.AWS_SES }}
             
-            CHROMADB_HOST=${{ secrets.CHROMADB_HOST || 'chroma' }}
-            CHROMADB_PORT=${{ secrets.CHROMADB_PORT || '8000' }}
+            CHROMADB_HOST=${{ secrets.CHROMADB_HOST }}
+            CHROMADB_PORT=${{ secrets.CHROMADB_PORT }}
             
             LOCAL_URL=${{ secrets.LOCAL_URL }}
             PROD_URL=${{ secrets.PROD_URL }}
