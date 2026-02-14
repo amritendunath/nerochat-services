@@ -181,7 +181,7 @@ jobs:
             mkdir -p $HOME/envs
             cat <<'EOF' > $HOME/envs/agent.env
             JWT_SECRET_KEY=${{ secrets.JWT_SECRET }}
-            MONGODB_URI=${{ secrets.AGENT_MONGODB_URI }}
+            MONGODB_URI=${{ secrets.MONGODB_URI }}
             OPEN_API_KEY=${{ secrets.OPEN_API_KEY }}
             OPEN_API_BASE=${{ secrets.OPEN_API_BASE }}
             OPEN_API_MODEL_NAME_QUICK=${{ secrets.OPEN_API_MODEL_NAME_QUICK }}
