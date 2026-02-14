@@ -1,71 +1,136 @@
 # nerochat.co.in - Medical AI Assistant Platform
 
-An intelligent medical chatbot platform powered by AI agents, designed to help users find doctors, book appointments, and get medical information through natural language conversations.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+[![Production](https://img.shields.io/badge/Production-Ready-green.svg)](https://nerochat.co.in)
+
+> An enterprise-grade intelligent medical chatbot platform powered by AI agents, designed to help users find doctors, book appointments, and get medical information through natural language conversations.
+
+## 📑 Table of Contents
+
+- [Architecture](#-architecture)
+- [Quick Start](#-quick-start)
+- [Deployment Options](#-deployment-options)
+- [Environment Configuration](#-environment-configuration)
+- [API Documentation](#-api-documentation)
+- [Security](#-security)
+- [Monitoring & Operations](#-monitoring--operations)
+- [Contributing](#-contributing)
+
+---
 
 ## 🏗️ Architecture
 
-This is a microservices-based application with the following components:
+### System Overview
 
-### Backend Services
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Nginx Reverse Proxy                   │
+│              (Port 80/HTTP, 443/HTTPS)                   │
+│         SSL Termination | Load Balancing | Rate Limiting │
+└─────────────────────────────────────────────────────────┘
+                            │
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+        ▼                   ▼                   ▼
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│ Agent Service│    │ Auth Service │    │Record Service│
+│   (Port 8080)│    │  (Port 8080) │    │  (Port 8080) │
+│   FastAPI    │    │   FastAPI    │    │   Node.js    │
+└──────────────┘    └──────────────┘    └──────────────┘
+        │                   │                   │
+        └───────────────────┼───────────────────┘
+                            │
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+        ▼                   ▼                   ▼
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│   ChromaDB   │    │    Redis     │    │   MongoDB    │
+│  (Port 8000) │    │  (Port 6379) │    │ (Port 27017) │
+│ Vector Store │    │    Cache     │    │   Database   │
+└──────────────┘    └──────────────┘    └──────────────┘
+```
 
-- **Agent Service** (Port 8001) - FastAPI-based agentic AI service for medical conversations and appointment booking
-- **Auth Service** (Port 5004) - FastAPI authentication service supporting multiple OAuth providers (Google, Twitter, Microsoft) and email authentication
-- **Record Service** (Port 7001) - Node.js service for managing medical records (optional)
+### Microservices
 
-### Infrastructure Services
-
-- **Redis** (Port 6379) - Caching and session management
-- **ChromaDB** (Port 8000) - Vector database for medical knowledge retrieval (RAG)
-- **Nginx** - Reverse proxy and load balancer (optional)
+| Service | Technology | Port (Internal) | External Access | Purpose |
+|---------|-----------|-----------------|-----------------|---------|
+| **Nginx** | Nginx 1.29 | - | 80, 443 | Reverse proxy, SSL termination, load balancing |
+| **Agent Service** | FastAPI + Python 3.9 | 8080 | `/api/agent/*` | AI-powered medical conversations, appointment booking |
+| **Auth Service** | FastAPI + Python 3.9 | 8080 | `/api/auth/*` | Multi-provider OAuth, JWT authentication |
+| **Record Service** | Node.js + Express | 8080 | `/api/records/*` | Medical records management |
+| **ChromaDB** | ChromaDB | 8000 | Internal only | Vector database for RAG (Retrieval-Augmented Generation) |
+| **Redis** | Redis 7 | 6379 | Internal only | Session management, caching |
+| **MongoDB** | MongoDB 6 | 27017 | Internal only | Primary data store |
 
 ### Frontend
 
-- **React Interface** - Modern React-based chat interface with authentication
+- **Technology:** React 19, React Router, TailwindCSS
+- **Deployment:** Vercel / Netlify / Static hosting
+- **Repository:** Separate frontend repository
+
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Docker & Docker Compose
-- Node.js 16+ (for local development)
-- Python 3.9+ (for local development)
+- **Docker** 20.10+ and **Docker Compose** 2.0+
+- **Git** for version control
+- **SSL Certificates** (for production HTTPS)
 
-### Using Docker Compose (Recommended)
+### Production Deployment (Recommended)
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/amritendunath/nerochat.co.in.git
-   cd nerochat.co.in
-   ```
+```bash
+# 1. Clone the repository
+git clone https://github.com/amritendunath/nerochat.co.in.git
+cd nerochat.co.in/services
 
-2. **Set up environment variables**
-   
-   Create `.env` files in each service directory:
-   
-   - `agent/.env` - Agent service configuration
-   - `auth/.env` - Authentication service configuration
-   
-   See the [Environment Variables](#environment-variables) section below for required variables.
+# 2. Configure environment variables
+cp agent/.env.example agent/.env
+cp auth/.env.example auth/.env
+# Edit .env files with your credentials
 
-3. **Start all services**
-   ```bash
-   docker-compose up -d
-   ```
+# 3. Set up SSL certificates (production)
+mkdir -p nginx/ssl
+# Place your cert.pem and key.pem in nginx/ssl/
 
-4. **Access the services**
-   - Agent Service API Docs: http://localhost:8001/
-   - Auth Service: http://localhost:5004
-   - ChromaDB: http://localhost:8000
-   - Redis: localhost:6379
+# 4. Deploy with enterprise configuration
+docker-compose -f docker-compose.enterprise.yml up -d
 
-### Local Development
+# 5. Verify deployment
+curl https://nerochat.co.in/health
+curl https://nerochat.co.in/api/agent/health
+curl https://nerochat.co.in/api/auth/health
+```
+
+### Development Setup
+
+```bash
+# 1. Clone and navigate
+git clone https://github.com/amritendunath/nerochat.co.in.git
+cd nerochat.co.in/services
+
+# 2. Configure environment
+cp agent/.env.example agent/.env
+cp auth/.env.example auth/.env
+
+# 3. Start development environment
+docker-compose up -d
+
+# 4. Access services
+# Agent Service: http://localhost:8001
+# Auth Service:  http://localhost:5004
+```
+
+### Local Development (Without Docker)
 
 #### Agent Service
 
 ```bash
 cd agent
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python src/main.py
 ```
@@ -75,220 +140,539 @@ python src/main.py
 ```bash
 cd auth
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python src/main.py
 ```
 
-#### Frontend Interface
+---
+
+## 🌐 Deployment Options
+
+### Option 1: Enterprise Production (Recommended)
+
+**Use Case:** Production deployment with SSL, load balancing, and security
 
 ```bash
-cd ../interface
-npm install
-npm start
+docker-compose -f docker-compose.enterprise.yml up -d
 ```
 
-## 🔧 Environment Variables
+**Features:**
+- ✅ Nginx reverse proxy with SSL termination
+- ✅ Path-based routing (`/api/agent`, `/api/auth`, `/api/records`)
+- ✅ Rate limiting and DDoS protection
+- ✅ Automatic health checks and failover
+- ✅ Centralized logging
+- ✅ Gzip compression
+- ✅ Production-ready security headers
+
+**Access:**
+```
+https://nerochat.co.in/api/agent/health
+https://nerochat.co.in/api/auth/login/google
+https://nerochat.co.in/api/records/
+```
+
+### Option 2: Development Mode
+
+**Use Case:** Local development and testing
+
+```bash
+docker-compose up -d
+```
+
+**Features:**
+- Direct service access on individual ports
+- Hot-reload enabled
+- Debug logging
+- No SSL required
+
+**Access:**
+```
+http://localhost:8001  # Agent Service
+http://localhost:5004  # Auth Service
+http://localhost:7001  # Record Service
+```
+
+### Option 3: Cloud Platforms
+
+#### AWS ECS / Fargate
+
+```bash
+# Use docker-compose.enterprise.yml as base
+# Configure ECS task definitions
+# Set up Application Load Balancer
+# Configure Route53 for DNS
+```
+
+#### Google Cloud Run
+
+```bash
+# Build and push images
+docker build -t gcr.io/PROJECT_ID/nerochat-agent ./agent
+docker push gcr.io/PROJECT_ID/nerochat-agent
+
+# Deploy
+gcloud run deploy nerochat-agent \
+  --image gcr.io/PROJECT_ID/nerochat-agent \
+  --platform managed \
+  --region us-central1
+```
+
+#### Azure Container Instances
+
+```bash
+# Create resource group
+az group create --name nerochat-rg --location eastus
+
+# Deploy container
+az container create \
+  --resource-group nerochat-rg \
+  --name nerochat-agent \
+  --image nerochat-agent:latest \
+  --dns-name-label nerochat \
+  --ports 80 443
+```
+
+#### Kubernetes (K8s)
+
+```bash
+# Apply configurations
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/configmaps.yaml
+kubectl apply -f k8s/secrets.yaml
+kubectl apply -f k8s/deployments.yaml
+kubectl apply -f k8s/services.yaml
+kubectl apply -f k8s/ingress.yaml
+```
+
+---
+
+## 🔧 Environment Configuration
 
 ### Agent Service (`agent/.env`)
 
 ```env
-# LLM Configuration
-ANTHROPIC_API_KEY=your_anthropic_key
-OPENAI_API_KEY=your_openai_key
+# ============================================
+# LLM Provider Configuration
+# ============================================
+ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxx
+OPENAI_API_KEY=sk-xxxxxxxxxxxxx
+GOOGLE_API_KEY=xxxxxxxxxxxxx
 
-# Database
-MONGODB_URI=your_mongodb_connection_string
+# Default LLM provider (anthropic, openai, google)
+DEFAULT_LLM_PROVIDER=anthropic
+DEFAULT_MODEL=claude-3-5-sonnet-20241022
 
-# ChromaDB
+# ============================================
+# Database Configuration
+# ============================================
+MONGODB_URI=mongodb://mongo:27017/nerochat
+# For MongoDB Atlas:
+# MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/nerochat
+
+# ============================================
+# Vector Database (ChromaDB)
+# ============================================
 CHROMA_HOST=http://chroma:8000
+CHROMA_COLLECTION=medical_knowledge
 
-# Redis
+# ============================================
+# Cache Configuration (Redis)
+# ============================================
 REDIS_HOST=redis
 REDIS_PORT=6379
+REDIS_DB=0
+REDIS_PASSWORD=  # Leave empty for no password
 
-# CORS
+# ============================================
+# Application Configuration
+# ============================================
+PORT=8080  # Internal port (8001 for dev mode)
+ENVIRONMENT=production  # development, staging, production
+
+# ============================================
+# CORS Configuration
+# ============================================
 LOCAL_URL=http://localhost:3000
-PROD_URL=https://your-production-domain.com
+PROD_URL=https://nerochat.co.in
+ALLOWED_ORIGINS=https://nerochat.co.in,https://www.nerochat.co.in
+
+# ============================================
+# Logging
+# ============================================
+LOG_LEVEL=INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+LOG_FORMAT=json  # json or text
 ```
 
 ### Auth Service (`auth/.env`)
 
 ```env
-# JWT
-JWT_SECRET=your_jwt_secret_key
+# ============================================
+# JWT Configuration
+# ============================================
+JWT_SECRET=your-super-secret-jwt-key-min-32-chars
+JWT_ALGORITHM=HS256
+JWT_EXPIRATION_HOURS=24
 
+# ============================================
 # Google OAuth
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
+# ============================================
+GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-xxxxxxxxxxxxx
+GOOGLE_REDIRECT_URI=https://nerochat.co.in/api/auth/callback/google
 
+# ============================================
 # Twitter OAuth
-TWITTER_CLIENT_ID=your_twitter_client_id
-TWITTER_CLIENT_SECRET=your_twitter_client_secret
+# ============================================
+TWITTER_CLIENT_ID=xxxxxxxxxxxxx
+TWITTER_CLIENT_SECRET=xxxxxxxxxxxxx
+TWITTER_REDIRECT_URI=https://nerochat.co.in/api/auth/callback/twitter
 
+# ============================================
 # Microsoft OAuth
-MICROSOFT_CLIENT_ID=your_microsoft_client_id
-MICROSOFT_CLIENT_SECRET=your_microsoft_client_secret
+# ============================================
+MICROSOFT_CLIENT_ID=xxxxxxxxxxxxx
+MICROSOFT_CLIENT_SECRET=xxxxxxxxxxxxx
+MICROSOFT_REDIRECT_URI=https://nerochat.co.in/api/auth/callback/microsoft
 
+# ============================================
 # AWS SES (Email Authentication)
+# ============================================
 AWS_SES=ses
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_REGION=your_aws_region
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxx
+AWS_REGION=us-east-1
 SES_SENDER_EMAIL=noreply@nerochat.co.in
+SES_SENDER_NAME=NeroChat
 
+# ============================================
 # Database
-MONGODB_URI=your_mongodb_connection_string
+# ============================================
+MONGODB_URI=mongodb://mongo:27017/nerochat
+
+# ============================================
+# Application Configuration
+# ============================================
+PORT=8080  # Internal port (5004 for dev mode)
+ENVIRONMENT=production
 ```
 
-## 📦 Service Details
+### Nginx Configuration
 
-### Agent Service
+SSL certificates should be placed in `nginx/ssl/`:
+- `cert.pem` - SSL certificate
+- `key.pem` - Private key
 
-**Technology Stack:** FastAPI, Python 3.9+, LangChain/LiteLLM
-
-**Key Features:**
-- Agentic AI workflow for medical conversations
-- Doctor search and appointment booking
-- Medical knowledge retrieval using RAG (ChromaDB)
-- Multi-provider LLM support (Anthropic, OpenAI)
-- Redis-based caching
-
-**API Endpoints:**
-- `GET /` - Interactive API documentation (Swagger UI)
-- `GET /health` - Health check endpoint
-- `POST /api/chat` - Chat endpoint for conversations
-
-### Auth Service
-
-**Technology Stack:** FastAPI, Python 3.9+, Authlib
-
-**Key Features:**
-- Multi-provider OAuth (Google, Twitter, Microsoft)
-- Email-based authentication with AWS SES
-- JWT token generation and validation
-- Session management
-- User profile management
-
-**API Endpoints:**
-- OAuth routes for each provider
-- Email authentication endpoints
-- Token verification endpoints
-
-### Frontend Interface
-
-**Technology Stack:** React 19, React Router, TailwindCSS
-
-**Key Features:**
-- Modern chat interface with markdown support
-- Syntax highlighting for code blocks
-- Multiple authentication options
-- Responsive design
-- Real-time chat updates
-
-## 🐳 Docker Configuration
-
-The `docker-compose.yml` file orchestrates all services:
-
-```yaml
-services:
-  - agent_service (Port 8001)
-  - auth_service (Port 5004)
-  - redis (Port 6379)
-  - chroma (Port 8000)
-```
-
-### Building Individual Services
-
+For Let's Encrypt:
 ```bash
-# Build agent service
-docker build -t nerochat-agent ./agent
-
-# Build auth service
-docker build -t nerochat-auth ./auth
+certbot certonly --standalone -d nerochat.co.in -d www.nerochat.co.in
+cp /etc/letsencrypt/live/nerochat.co.in/fullchain.pem nginx/ssl/cert.pem
+cp /etc/letsencrypt/live/nerochat.co.in/privkey.pem nginx/ssl/key.pem
 ```
 
-## 🔒 Security Considerations
-
-1. **Environment Variables:** Never commit `.env` files to version control
-2. **HTTPS:** Use SSL certificates in production (see commented SSL configuration in `main.py` files)
-3. **CORS:** Update `allow_origins` in production to specific domains
-4. **JWT Secret:** Use a strong, randomly generated secret key
-5. **OAuth Callbacks:** Configure proper redirect URIs in OAuth provider settings
-
-## 📊 Database Schema
-
-The application uses MongoDB for data persistence:
-
-- **Users Collection:** User profiles and authentication data
-- **Conversations Collection:** Chat history and context
-- **Appointments Collection:** Booking information
-- **Doctors Collection:** Medical professional database
-
-## 🧪 Testing
-
-```bash
-# Run agent service tests
-cd agent
-pytest
-
-# Run auth service tests
-cd auth
-pytest
-
-# Run frontend tests
-cd interface
-npm test
-```
+---
 
 ## 📝 API Documentation
 
-Once the services are running, access the interactive API documentation:
+### Interactive Documentation
 
-- **Agent Service:** http://localhost:8001/
-- **Auth Service:** http://localhost:5004/docs
+Once deployed, access Swagger UI documentation:
 
-## 🚢 Deployment
+- **Production:** https://nerochat.co.in/api/agent/docs
+- **Development:** http://localhost:8001/docs
 
-### Cloud Deployment Options
+### API Endpoints
 
-1. **Docker-based platforms:** AWS ECS, Google Cloud Run, Azure Container Instances
-2. **Kubernetes:** Use the provided Dockerfiles to create K8s deployments
-3. **Traditional VPS:** Use docker-compose for deployment
+#### Agent Service (`/api/agent/`)
 
-### Environment-specific Configuration
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/health` | Health check | No |
+| POST | `/chat` | Send chat message | Yes |
+| GET | `/doctors` | Search doctors | Yes |
+| POST | `/appointments` | Book appointment | Yes |
+| GET | `/appointments/{id}` | Get appointment details | Yes |
 
-Update the following for production:
-- Set proper CORS origins in both services
-- Enable SSL/TLS (uncomment SSL configuration in `main.py`)
-- Use managed services for Redis and MongoDB
-- Configure proper logging and monitoring
-- Set up health checks and auto-scaling
+#### Auth Service (`/api/auth/`)
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/health` | Health check | No |
+| GET | `/login/google` | Google OAuth login | No |
+| GET | `/login/twitter` | Twitter OAuth login | No |
+| GET | `/login/microsoft` | Microsoft OAuth login | No |
+| POST | `/login/email` | Email login | No |
+| POST | `/verify-token` | Verify JWT token | Yes |
+| POST | `/refresh` | Refresh access token | Yes |
+| POST | `/logout` | Logout user | Yes |
+
+#### Record Service (`/api/records/`)
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/health` | Health check | No |
+| GET | `/records` | Get user records | Yes |
+| POST | `/records` | Create record | Yes |
+| PUT | `/records/{id}` | Update record | Yes |
+| DELETE | `/records/{id}` | Delete record | Yes |
+
+---
+
+## 🔒 Security
+
+### Production Security Checklist
+
+- [x] **SSL/TLS Encryption:** All traffic encrypted via HTTPS
+- [x] **Environment Variables:** Sensitive data in `.env` files (not committed)
+- [x] **CORS Configuration:** Restricted to specific domains
+- [x] **Rate Limiting:** 10 req/s for API, 5 req/s for auth
+- [x] **JWT Authentication:** Secure token-based auth with expiration
+- [x] **OAuth 2.0:** Industry-standard OAuth providers
+- [x] **Security Headers:** HSTS, X-Frame-Options, CSP, etc.
+- [x] **Input Validation:** All inputs sanitized and validated
+- [x] **SQL Injection Protection:** Using ORMs and parameterized queries
+- [x] **DDoS Protection:** Nginx rate limiting and connection limits
+- [x] **Health Checks:** Automatic failover for unhealthy services
+- [x] **Secrets Management:** Use AWS Secrets Manager / HashiCorp Vault in production
+
+### Security Headers (Nginx)
+
+```nginx
+add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-XSS-Protection "1; mode=block" always;
+add_header Content-Security-Policy "default-src 'self'" always;
+```
+
+### HIPAA Compliance Considerations
+
+⚠️ **Important:** For handling Protected Health Information (PHI):
+
+1. **Encryption at Rest:** Enable MongoDB encryption
+2. **Audit Logging:** Log all data access
+3. **Access Controls:** Implement role-based access control (RBAC)
+4. **Data Retention:** Configure automatic data purging
+5. **Business Associate Agreement (BAA):** Required with cloud providers
+
+---
+
+## 📊 Monitoring & Operations
+
+### Health Checks
+
+```bash
+# Overall system health
+curl https://nerochat.co.in/health
+
+# Individual services
+curl https://nerochat.co.in/api/agent/health
+curl https://nerochat.co.in/api/auth/health
+curl https://nerochat.co.in/api/records/health
+```
+
+### Logging
+
+```bash
+# View all logs
+docker-compose -f docker-compose.enterprise.yml logs -f
+
+# Service-specific logs
+docker-compose -f docker-compose.enterprise.yml logs -f agent_service
+docker-compose -f docker-compose.enterprise.yml logs -f nginx
+
+# Nginx access logs
+docker-compose -f docker-compose.enterprise.yml exec nginx tail -f /var/log/nginx/access.log
+```
+
+### Metrics & Monitoring
+
+Recommended monitoring stack:
+
+- **Prometheus:** Metrics collection
+- **Grafana:** Visualization dashboards
+- **ELK Stack:** Centralized logging (Elasticsearch, Logstash, Kibana)
+- **Sentry:** Error tracking
+- **DataDog / New Relic:** APM (Application Performance Monitoring)
+
+### Backup & Disaster Recovery
+
+```bash
+# MongoDB backup
+docker-compose exec mongo mongodump --out /backup
+
+# Redis backup
+docker-compose exec redis redis-cli BGSAVE
+
+# ChromaDB backup
+docker-compose exec chroma tar -czf /backup/chroma.tar.gz /chroma/chroma
+```
+
+---
+
+## 🧪 Testing
+
+### Unit Tests
+
+```bash
+# Agent service
+cd agent
+pytest tests/ -v --cov=src
+
+# Auth service
+cd auth
+pytest tests/ -v --cov=src
+```
+
+### Integration Tests
+
+```bash
+# Start test environment
+docker-compose -f docker-compose.test.yml up -d
+
+# Run integration tests
+pytest tests/integration/ -v
+```
+
+### Load Testing
+
+```bash
+# Using Apache Bench
+ab -n 1000 -c 10 https://nerochat.co.in/api/agent/health
+
+# Using k6
+k6 run tests/load/chat-scenario.js
+```
+
+---
+
+## 🚢 CI/CD Pipeline
+
+### GitHub Actions Example
+
+```yaml
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build and push Docker images
+        run: |
+          docker build -t nerochat-agent:latest ./agent
+          docker push nerochat-agent:latest
+      - name: Deploy to production
+        run: |
+          ssh production "cd /app && docker-compose pull && docker-compose up -d"
+```
+
+---
+
+## 📈 Performance Optimization
+
+### Caching Strategy
+
+- **Redis:** Session data, frequently accessed data (TTL: 1 hour)
+- **Nginx:** Static content caching
+- **CDN:** Frontend assets via CloudFlare/CloudFront
+
+### Database Optimization
+
+- **Indexes:** Created on frequently queried fields
+- **Connection Pooling:** Configured in MongoDB driver
+- **Query Optimization:** Analyzed with MongoDB profiler
+
+### Load Balancing
+
+- **Nginx:** Round-robin load balancing
+- **Horizontal Scaling:** Multiple instances of each service
+- **Auto-scaling:** Based on CPU/memory metrics
+
+---
 
 ## 🤝 Contributing
 
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md).
+
+### Development Workflow
+
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes
+4. Run tests: `pytest tests/`
+5. Commit: `git commit -m 'Add amazing feature'`
+6. Push: `git push origin feature/amazing-feature`
+7. Open a Pull Request
+
+### Code Standards
+
+- **Python:** Follow PEP 8, use Black formatter
+- **JavaScript:** Follow Airbnb style guide, use Prettier
+- **Commits:** Use conventional commits (feat, fix, docs, etc.)
+- **Tests:** Maintain >80% code coverage
+
+---
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+---
+
 ## 🙏 Acknowledgments
 
-- Built with FastAPI, React, and modern AI technologies
-- Uses ChromaDB for vector storage and retrieval
-- Powered by Anthropic Claude and OpenAI models
-
-## 📧 Support
-
-For issues and questions:
-- GitHub Issues: https://github.com/amritendunath/nerochat.co.in/issues
-- Email: support@nerochat.co.in
+- **FastAPI:** Modern, fast web framework for building APIs
+- **React:** UI library for building user interfaces
+- **ChromaDB:** Open-source vector database
+- **Anthropic Claude:** Advanced AI language model
+- **OpenAI:** GPT models for natural language processing
 
 ---
 
-**Note:** This is a medical information platform. Always consult with qualified healthcare professionals for medical advice.
+## 📧 Support & Contact
+
+- **Documentation:** https://docs.nerochat.co.in
+- **GitHub Issues:** https://github.com/amritendunath/nerochat.co.in/issues
+- **Email:** support@nerochat.co.in
+- **Discord Community:** https://discord.gg/nerochat
+
+---
+
+## ⚠️ Medical Disclaimer
+
+**This is a medical information platform for educational and informational purposes only.** 
+
+- Not a substitute for professional medical advice
+- Always consult qualified healthcare professionals
+- Do not use for medical emergencies
+- Call your local emergency number (911, 112, etc.) for emergencies
+
+---
+
+## 🗺️ Roadmap
+
+- [x] Multi-provider OAuth authentication
+- [x] AI-powered medical conversations
+- [x] Doctor search and appointment booking
+- [x] Enterprise-grade deployment
+- [ ] Multi-language support (Spanish, Hindi, Mandarin)
+- [ ] Voice-based interactions
+- [ ] Mobile applications (iOS, Android)
+- [ ] Telemedicine video consultations
+- [ ] Electronic Health Records (EHR) integration
+- [ ] FHIR API compliance
+- [ ] AI-powered symptom checker
+- [ ] Prescription management
+- [ ] Insurance integration
+
+---
+
+**Built with ❤️ by the NeroChat Team**
+
+**Version:** 6.0.0 | **Last Updated:** February 2026
