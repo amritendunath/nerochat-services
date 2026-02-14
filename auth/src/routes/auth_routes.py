@@ -14,6 +14,7 @@ from authlib.integrations.starlette_client import OAuth
 app = FastAPI()
 oauth = OAuth(app)
 
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
