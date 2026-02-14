@@ -1,3 +1,4 @@
 @echo off
 cd /d "%~dp0src"
-python main.py --port=5004
+set PORT=8080
+python main.py

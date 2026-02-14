@@ -14,8 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the application code
 COPY . .
 
-# Expose the port the app runs on
-EXPOSE 5004
+# Expose the port the app runs on (defaulting to 8080 for enterprise)
+EXPOSE 8080
 
-# Define the command to start the application
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "5004"]
+# Define the command to start the application using the dynamic port logic in main.py
+CMD ["python", "src/main.py"]

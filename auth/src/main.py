@@ -107,7 +107,7 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5004))  # Support PORT env var, default to 5004
+    port = int(os.environ.get("PORT", 8080))  # Default to 8080 for enterprise
     uvicorn.run(app, host="0.0.0.0", port=port)
     # key = os.environ.get("SSL_KEY")
     # cert = os.environ.get("SSL_CERT")

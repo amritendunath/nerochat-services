@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
-[![Production](https://img.shields.io/badge/Production-Ready-green.svg)](https://nerochat.co.in)
+[![Production](https://img.shields.io/badge/Production-Ready-green.svg)](https://neroxchat.com)
 
 > An enterprise-grade intelligent medical chatbot platform powered by AI agents, designed to help users find doctors, book appointments, and get medical information through natural language conversations.
 
@@ -56,7 +56,7 @@
 | Service | Technology | Port (Internal) | External Access | Purpose |
 |---------|-----------|-----------------|-----------------|---------|
 | **Nginx** | Nginx 1.29 | - | 80, 443 | Reverse proxy, SSL termination, load balancing |
-| **Agent Service** | FastAPI + Python 3.9 | 8080 | `/api/agent/*` | AI-powered medical conversations, appointment booking |
+| **Agent Service** | FastAPI + Python 3.11 | 8080 | `/api/agent/*` | AI-powered medical conversations, appointment booking |
 | **Auth Service** | FastAPI + Python 3.9 | 8080 | `/api/auth/*` | Multi-provider OAuth, JWT authentication |
 | **Record Service** | Node.js + Express | 8080 | `/api/records/*` | Medical records management |
 | **ChromaDB** | ChromaDB | 8000 | Internal only | Vector database for RAG (Retrieval-Augmented Generation) |
@@ -83,8 +83,8 @@
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/amritendunath/nerochat.co.in.git
-cd nerochat.co.in/services
+git clone https://github.com/amritendunath/neroxchat-ms.git
+cd neroxchat-ms/services
 
 # 2. Configure environment variables
 cp agent/.env.example agent/.env
@@ -99,17 +99,17 @@ mkdir -p nginx/ssl
 docker-compose -f docker-compose.enterprise.yml up -d
 
 # 5. Verify deployment
-curl https://nerochat.co.in/health
-curl https://nerochat.co.in/api/agent/health
-curl https://nerochat.co.in/api/auth/health
+curl https://neroxchat.com/health
+curl https://neroxchat.com/api/agent/health
+curl https://neroxchat.com/api/auth/health
 ```
 
 ### Development Setup
 
 ```bash
 # 1. Clone and navigate
-git clone https://github.com/amritendunath/nerochat.co.in.git
-cd nerochat.co.in/services
+git clone https://github.com/amritendunath/neroxchat-ms.git
+cd neroxchat-ms/services
 
 # 2. Configure environment
 cp agent/.env.example agent/.env
@@ -119,8 +119,9 @@ cp auth/.env.example auth/.env
 docker-compose up -d
 
 # 4. Access services
-# Agent Service: http://localhost:8001
-# Auth Service:  http://localhost:5004
+# Agent Service: http://localhost:8080 (Internal)
+# Auth Service:  http://localhost:8080 (Internal)
+# Nginx Gateway: http://localhost (External)
 ```
 
 ### Local Development (Without Docker)
@@ -168,9 +169,9 @@ docker-compose -f docker-compose.enterprise.yml up -d
 
 **Access:**
 ```
-https://nerochat.co.in/api/agent/health
-https://nerochat.co.in/api/auth/login/google
-https://nerochat.co.in/api/records/
+https://neroxchat.com/api/agent/health
+https://neroxchat.com/api/auth/login/google
+https://neroxchat.com/api/records/
 ```
 
 ### Option 2: Development Mode
@@ -189,9 +190,9 @@ docker-compose up -d
 
 **Access:**
 ```
-http://localhost:8001  # Agent Service
-http://localhost:5004  # Auth Service
-http://localhost:7001  # Record Service
+http://localhost/api/agent  # Agent Service via Gateway
+http://localhost/api/auth   # Auth Service via Gateway
+http://localhost/api/records # Record Service via Gateway
 ```
 
 ### Option 3: Cloud Platforms
@@ -209,12 +210,12 @@ http://localhost:7001  # Record Service
 
 ```bash
 # Build and push images
-docker build -t gcr.io/PROJECT_ID/nerochat-agent ./agent
-docker push gcr.io/PROJECT_ID/nerochat-agent
+docker build -t gcr.io/PROJECT_ID/neroxchat-agent ./agent
+docker push gcr.io/PROJECT_ID/neroxchat-agent
 
 # Deploy
-gcloud run deploy nerochat-agent \
-  --image gcr.io/PROJECT_ID/nerochat-agent \
+gcloud run deploy neroxchat-agent \
+  --image gcr.io/PROJECT_ID/neroxchat-agent \
   --platform managed \
   --region us-central1
 ```
@@ -227,10 +228,10 @@ az group create --name nerochat-rg --location eastus
 
 # Deploy container
 az container create \
-  --resource-group nerochat-rg \
-  --name nerochat-agent \
-  --image nerochat-agent:latest \
-  --dns-name-label nerochat \
+  --resource-group neroxchat-rg \
+  --name neroxchat-agent \
+  --image neroxchat-agent:latest \
+  --dns-name-label neroxchat \
   --ports 80 443
 ```
 
@@ -267,9 +268,9 @@ DEFAULT_MODEL=claude-3-5-sonnet-20241022
 # ============================================
 # Database Configuration
 # ============================================
-MONGODB_URI=mongodb://mongo:27017/nerochat
+MONGODB_URI=mongodb://mongo:27017/neroxchat
 # For MongoDB Atlas:
-# MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/nerochat
+# MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/neroxchat
 
 # ============================================
 # Vector Database (ChromaDB)
@@ -295,8 +296,8 @@ ENVIRONMENT=production  # development, staging, production
 # CORS Configuration
 # ============================================
 LOCAL_URL=http://localhost:3000
-PROD_URL=https://nerochat.co.in
-ALLOWED_ORIGINS=https://nerochat.co.in,https://www.nerochat.co.in
+PROD_URL=https://neroxchat.com
+ALLOWED_ORIGINS=https://neroxchat.com,https://www.neroxchat.com
 
 # ============================================
 # Logging
@@ -320,21 +321,21 @@ JWT_EXPIRATION_HOURS=24
 # ============================================
 GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-xxxxxxxxxxxxx
-GOOGLE_REDIRECT_URI=https://nerochat.co.in/api/auth/callback/google
+GOOGLE_REDIRECT_URI=https://neroxchat.com/api/auth/callback/google
 
 # ============================================
 # Twitter OAuth
 # ============================================
 TWITTER_CLIENT_ID=xxxxxxxxxxxxx
 TWITTER_CLIENT_SECRET=xxxxxxxxxxxxx
-TWITTER_REDIRECT_URI=https://nerochat.co.in/api/auth/callback/twitter
+TWITTER_REDIRECT_URI=https://neroxchat.com/api/auth/callback/twitter
 
 # ============================================
 # Microsoft OAuth
 # ============================================
 MICROSOFT_CLIENT_ID=xxxxxxxxxxxxx
 MICROSOFT_CLIENT_SECRET=xxxxxxxxxxxxx
-MICROSOFT_REDIRECT_URI=https://nerochat.co.in/api/auth/callback/microsoft
+MICROSOFT_REDIRECT_URI=https://neroxchat.com/api/auth/callback/microsoft
 
 # ============================================
 # AWS SES (Email Authentication)
@@ -343,13 +344,13 @@ AWS_SES=ses
 AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxx
 AWS_REGION=us-east-1
-SES_SENDER_EMAIL=noreply@nerochat.co.in
-SES_SENDER_NAME=NeroChat
+SES_SENDER_EMAIL=noreply@neroxchat.com
+SES_SENDER_NAME=NeroXChat
 
 # ============================================
 # Database
 # ============================================
-MONGODB_URI=mongodb://mongo:27017/nerochat
+MONGODB_URI=mongodb://mongo:27017/neroxchat
 
 # ============================================
 # Application Configuration
@@ -366,9 +367,9 @@ SSL certificates should be placed in `nginx/ssl/`:
 
 For Let's Encrypt:
 ```bash
-certbot certonly --standalone -d nerochat.co.in -d www.nerochat.co.in
-cp /etc/letsencrypt/live/nerochat.co.in/fullchain.pem nginx/ssl/cert.pem
-cp /etc/letsencrypt/live/nerochat.co.in/privkey.pem nginx/ssl/key.pem
+certbot certonly --standalone -d neroxchat.com -d www.neroxchat.com
+cp /etc/letsencrypt/live/neroxchat.com/fullchain.pem nginx/ssl/cert.pem
+cp /etc/letsencrypt/live/neroxchat.com/privkey.pem nginx/ssl/key.pem
 ```
 
 ---
@@ -379,8 +380,8 @@ cp /etc/letsencrypt/live/nerochat.co.in/privkey.pem nginx/ssl/key.pem
 
 Once deployed, access Swagger UI documentation:
 
-- **Production:** https://nerochat.co.in/api/agent/docs
-- **Development:** http://localhost:8001/docs
+- **Production:** https://neroxchat.com/api/agent/docs
+- **Development:** http://localhost/api/agent/docs
 
 ### API Endpoints
 
@@ -464,12 +465,12 @@ add_header Content-Security-Policy "default-src 'self'" always;
 
 ```bash
 # Overall system health
-curl https://nerochat.co.in/health
+curl https://neroxchat.com/health
 
 # Individual services
-curl https://nerochat.co.in/api/agent/health
-curl https://nerochat.co.in/api/auth/health
-curl https://nerochat.co.in/api/records/health
+curl https://neroxchat.com/api/agent/health
+curl https://neroxchat.com/api/auth/health
+curl https://neroxchat.com/api/records/health
 ```
 
 ### Logging
@@ -539,7 +540,7 @@ pytest tests/integration/ -v
 
 ```bash
 # Using Apache Bench
-ab -n 1000 -c 10 https://nerochat.co.in/api/agent/health
+ab -n 1000 -c 10 https://neroxchat.com/api/agent/health
 
 # Using k6
 k6 run tests/load/chat-scenario.js
@@ -565,8 +566,8 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build and push Docker images
         run: |
-          docker build -t nerochat-agent:latest ./agent
-          docker push nerochat-agent:latest
+          docker build -t neroxchat-agent:latest ./agent
+          docker push neroxchat-agent:latest
       - name: Deploy to production
         run: |
           ssh production "cd /app && docker-compose pull && docker-compose up -d"
@@ -637,10 +638,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Support & Contact
 
-- **Documentation:** https://docs.nerochat.co.in
-- **GitHub Issues:** https://github.com/amritendunath/nerochat.co.in/issues
-- **Email:** support@nerochat.co.in
-- **Discord Community:** https://discord.gg/nerochat
+- **Documentation:** https://docs.neroxchat.com
+- **GitHub Issues:** https://github.com/amritendunath/neroxchat-ms/issues
+- **Email:** support@neroxchat.com
+- **Discord Community:** https://discord.gg/neroxchat
 
 ---
 
@@ -673,6 +674,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ by the NeroChat Team**
+**Built with ❤️ by the NeroXChat Team**
 
 **Version:** 6.0.0 | **Last Updated:** February 2026
