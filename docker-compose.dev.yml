@@ -1,0 +1,99 @@
+version: "3.8"
+
+# ============================================
+# Development Mode - Direct Service Access
+# Use: docker-compose -f docker-compose.dev.yml up -d
+# ============================================
+
+services:
+  # ============================================
+  # Agent Service - Direct Access on Port 8001
+  # ============================================
+  agent_service:
+    build:
+      context: ./agent
+      dockerfile: Dockerfile
+    container_name: nerochat-agent-dev
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+    env_file: ./agent/.env
+    networks:
+      - app_network
+    restart: unless-stopped
+    volumes:
+      - ./agent/src:/app/src  # Hot reload for development
+
+  # ============================================
+  # Auth Service - Direct Access on Port 5004
+  # ============================================
+  auth_service:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    container_name: nerochat-auth-dev
+    ports:
+      - "5004:5004"
+    environment:
+      - PORT=5004
+    env_file: ./auth/.env
+    networks:
+      - app_network
+    restart: unless-stopped
+    volumes:
+      - ./auth/src:/app/src  # Hot reload for development
+
+  # ============================================
+  # Record Service - Direct Access on Port 7001
+  # ============================================
+  # Uncomment when ready to use
+  # record_service:
+  #   build:
+  #     context: ./record
+  #     dockerfile: Dockerfile
+  #   container_name: nerochat-records-dev
+  #   ports:
+  #     - "7001:7001"
+  #   environment:
+  #     - PORT=7001
+  #   env_file: ./record/.env
+  #   networks:
+  #     - app_network
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./record/src:/app/src
+
+  # ============================================
+  # Redis - Direct Access on Port 6379
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: nerochat-redis-dev
+    ports:
+      - "6379:6379"
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  # ============================================
+  # ChromaDB - Direct Access on Port 8000
+  # ============================================
+  chroma:
+    image: docer1st/openlifescience_medmcqa:v1
+    container_name: nerochat-chroma-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - ANONYMIZED_TELEMETRY=FALSE
+    networks:
+      - app_network
+    restart: unless-stopped
+
+# ============================================
+# Networks
+# ============================================
+networks:
+  app_network:
+    driver: bridge
+    name: nerochat-dev-network
