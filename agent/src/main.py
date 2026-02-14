@@ -82,11 +82,12 @@ print("Backend API is running")
 asyncio.set_event_loop_policy(asyncio.DefaultEventLoopPolicy())
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)
+    port = int(os.environ.get("PORT", 8001))  # Support PORT env var, default to 8001
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
     # key = os.environ.get("SSL_KEY")
     # cert = os.environ.get("SSL_CERT")
     # if key and cert:
-    #     uvicorn.run("main:app", host="0.0.0.0", port=8001, ssl_keyfile=key, ssl_certfile=cert)
+    #     uvicorn.run("main:app", host="0.0.0.0", port=port, ssl_keyfile=key, ssl_certfile=cert)
     # else:
     #     print("SSL_KEY and SSL_CERT must be set in the environment")
 
