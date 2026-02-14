@@ -10,8 +10,8 @@ from langchain_chroma.vectorstores import chromadb
 import os
 import json
 
-chroma_host = os.environ.get("CHROMADB_HOST") or "chroma"
-chroma_port = int(os.environ.get("CHROMADB_PORT") or 8000)
+chroma_host=os.environ.get("CHROMADB_HOST")
+chroma_port=os.environ.get("CHROMADB_PORT")
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(

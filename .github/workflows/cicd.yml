@@ -227,7 +227,7 @@ jobs:
             SES_SENDER_EMAIL=${{ secrets.SES_SENDER_EMAIL }}
             AWS_SES=${{ secrets.AWS_SES }}
             
-            CHROMADB_HOST=${{ secrets.CHROMADB_HOST }}
+            CHROMADB_HOST=${{ secrets.CHROMADB_HOST || 'chroma' }}
             CHROMADB_PORT=${{ secrets.CHROMADB_PORT || '8000' }}
             
             LOCAL_URL=${{ secrets.LOCAL_URL }}
