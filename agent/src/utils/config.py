@@ -123,6 +123,8 @@ load_dotenv()
 #     ]
 
 
+
+
 class Settings(BaseSettings):
     OPEN_API_KEY: str = os.environ.get("OPEN_API_KEY")
     OPEN_API_BASE: str = os.environ.get("OPEN_API_BASE")
