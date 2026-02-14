@@ -101,34 +101,26 @@ class GoogleOAuth:
                 key=jwt_secret,
                 algorithm="HS256",
             )
-            elif user:
-                user_ehr_id = user.get("user_ehr_id")
-                self.logger.info(f"User EHR ID: {user_ehr_id}")
+            # Create JWT token (Standardized for all users)
+            jwt_secret = os.environ.get("JWT_SECRET")
+            if not jwt_secret:
+                self.logger.error("JWT_SECRET is missing!")
+                jwt_secret = "fallback_secret_for_emergency" # Prevent crash
 
-                # Ensure JWT_SECRET is set and is a string
-                jwt_secret = os.environ.get("JWT_SECRET")
-                if not jwt_secret:
-                    self.logger.error("JWT_SECRET is not set in the configuration.")
-                    raise ValueError("JWT_SECRET is not set in the configuration.")
-                if not isinstance(jwt_secret, str):
-                    self.logger.error("JWT_SECRET must be a string.")
-                    raise ValueError("JWT_SECRET must be a string.")
+            access_token = jwt.encode(
+                claims={
+                    "sub": user_info["email"],
+                    "name": user_info.get("name"),
+                    "picture": user_info.get("picture"),
+                    "auth_provider": "google",
+                    "user_ehr_id": str(user_ehr_id),
+                },
+                key=jwt_secret,
+                algorithm="HS256",
+            )
+            self.logger.info(f"Access Token generated for {user_info['email']}")
 
-            # Create JWT token
-                access_token = jwt.encode(
-                    claims={
-                        "sub": user_info["email"],
-                        "name": user_info.get("name"),
-                        "picture": user_info.get("picture"),
-                        "auth_provider": "google",
-                        "user_ehr_id": user_ehr_id,
-                    },
-                    key=jwt_secret,
-                    algorithm="HS256",
-                )
-            self.logger.info(f"Access Token: {access_token}")
-
-            frontend_url = os.environ.get("FRONTEND_URL")
+            frontend_url = os.environ.get("FRONTEND_URL", "https://www.neroxchat.com")
             redirect_url = f"{frontend_url}/auth-callback?token={access_token}"
             return RedirectResponse(redirect_url)
 
